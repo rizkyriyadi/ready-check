@@ -1,0 +1,20 @@
+{
+    "version": "1.0.0",
+    "build_number": 1,
+    "release_date": "2025-12-29",
+    "release_notes": "Initial release with core features",
+    "min_supported_version": "1.0.0",
+    "update_url": {
+        "android": "https://github.com/rizkyriyadi/ready-check/releases/latest/download/app-release.apk",
+        "ios": ""
+    },
+    "force_update": false,
+    "changelog": [
+        "🔥 Ready Check (Summon) with full-screen notification",
+        "💬 Real-time Circle Chat",
+        "👥 Circle system with invite codes",
+        "🔔 Push notifications (FCM)",
+        "🎨 Liquid Glass UI design",
+        "🛡️ Custom app branding"
+    ]
+}
