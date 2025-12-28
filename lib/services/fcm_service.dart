@@ -57,7 +57,7 @@ class FcmService {
   }
 
   Future<void> _initLocalNotifications() async {
-    const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('@mipmap/launcher_icon');
     const InitializationSettings initSettings = InitializationSettings(android: androidSettings);
     
     await _localNotifications.initialize(
