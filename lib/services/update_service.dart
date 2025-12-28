@@ -10,7 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 /// OTA Update Service for self-hosted app updates via GitHub
 class UpdateService {
   static const String UPDATE_JSON_URL = 
-      'https://raw.githubusercontent.com/rizkyriyadi/ready-check/refs/heads/main/version.json';
+      'https://raw.githubusercontent.com/rizkyriyadi/ready-check/main/version.json';
 
   /// Model for update info
   UpdateInfo? _cachedUpdateInfo;

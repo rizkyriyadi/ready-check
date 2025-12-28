@@ -3,13 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:ready_check/models/friend_model.dart';
 import 'package:ready_check/services/auth_service.dart';
 import 'package:ready_check/services/theme_service.dart';
 import 'package:ready_check/services/friend_service.dart';
+import 'package:ready_check/services/update_service.dart';
 import 'package:ready_check/screens/widgets/user_avatar.dart';
 import 'package:ready_check/screens/onboarding_screen.dart';
 import 'package:ready_check/screens/widgets/glass_container.dart';
+import 'package:ready_check/screens/widgets/update_dialog.dart';
 import 'package:ready_check/screens/friends/friends_hub_page.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -55,6 +58,50 @@ class ProfilePage extends StatelessWidget {
         ],
       )
     );
+  }
+
+  void _checkForUpdates(BuildContext context) async {
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final updateService = UpdateService();
+      final updateInfo = await updateService.checkForUpdate();
+      
+      if (!context.mounted) return;
+      Navigator.pop(context); // Close loading
+
+      if (updateInfo != null) {
+        // Show update dialog
+        showDialog(
+          context: context,
+          barrierDismissible: !updateInfo.forceUpdate,
+          builder: (_) => UpdateDialog(updateInfo: updateInfo),
+        );
+      } else {
+        // Already up to date
+        final packageInfo = await PackageInfo.fromPlatform();
+        if (!context.mounted) return;
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✓ You\'re up to date! (v${packageInfo.version})'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error checking for updates: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -225,6 +272,13 @@ class ProfilePage extends StatelessWidget {
                          secondary: Icon(Icons.dark_mode, color: themeService.isDarkMode ? Colors.yellow : Colors.grey),
                          value: themeService.isDarkMode,
                          onChanged: (val) => themeService.toggleTheme(val),
+                       ),
+                       const Divider(indent: 16, endIndent: 16),
+                       ListTile(
+                         leading: const Icon(Icons.system_update, color: Colors.blueAccent),
+                         title: const Text("Check for Updates"),
+                         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                         onTap: () => _checkForUpdates(context),
                        ),
                        const Divider(indent: 16, endIndent: 16),
                        ListTile(
