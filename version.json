@@ -5,7 +5,7 @@
     "release_notes": "Friends Tab & Chat UX Update",
     "min_supported_version": "1.0.0",
     "update_url": {
-        "android": "https://github.com/rizkyriyadi/ready-check/releases/download/v1.2.0/ready-check-v1.2.0.apk",
+        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.2.0.apk",
         "ios": ""
     },
     "force_update": false,
