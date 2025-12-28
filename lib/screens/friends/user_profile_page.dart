@@ -4,9 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:ready_check/models/friend_model.dart';
 import 'package:ready_check/services/friend_service.dart';
 import 'package:ready_check/services/direct_chat_service.dart';
+import 'package:ready_check/services/auth_service.dart';
 import 'package:ready_check/screens/widgets/glass_container.dart';
 import 'package:ready_check/screens/widgets/user_avatar.dart';
 import 'package:ready_check/screens/chat/direct_chat_page.dart';
+import 'package:intl/intl.dart';
 
 class UserProfilePage extends StatefulWidget {
   final String userId;
@@ -21,6 +23,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   AppUser? _user;
   String _friendshipStatus = 'loading';
   bool _isLoading = true;
+  int _friendCount = 0;
 
   @override
   void initState() {
@@ -45,6 +48,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = Provider.of<AuthService>(context).user;
+    final isOwnProfile = currentUser?.uid == widget.userId;
+
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(backgroundColor: Colors.transparent),
@@ -55,7 +61,21 @@ class _UserProfilePageState extends State<UserProfilePage> {
     if (_user == null) {
       return Scaffold(
         appBar: AppBar(backgroundColor: Colors.transparent),
-        body: const Center(child: Text('User not found')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.person_off, size: 80, color: Colors.grey.shade600),
+              const SizedBox(height: 16),
+              const Text('User not found', style: TextStyle(fontSize: 18)),
+              const SizedBox(height: 8),
+              Text(
+                'ID: ${widget.userId}',
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -64,36 +84,76 @@ class _UserProfilePageState extends State<UserProfilePage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          if (!isOwnProfile && _friendshipStatus == 'friend')
+            IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () => _showOptionsMenu(context),
+            ),
+        ],
       ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [Color(0xFF1F2937), Color(0xFF111827)],
           ),
         ),
-        child: Center(
+        child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                // Profile Card
+                const SizedBox(height: 20),
+                // Avatar & Name
+                UserAvatar(photoUrl: _user!.photoUrl, radius: 60),
+                const SizedBox(height: 16),
+                Text(
+                  _user!.displayName.isEmpty ? 'Anonymous' : _user!.displayName,
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                
+                // Status badge
+                if (!isOwnProfile)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor().withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: _getStatusColor().withOpacity(0.5)),
+                    ),
+                    child: Text(
+                      _getStatusText(),
+                      style: TextStyle(color: _getStatusColor(), fontSize: 12),
+                    ),
+                  ),
+                
+                const SizedBox(height: 20),
+                
+                // User ID card
                 GlassContainer(
-                  padding: const EdgeInsets.all(24),
-                  opacity: 0.3,
+                  margin: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.all(16),
+                  opacity: 0.2,
                   child: Column(
                     children: [
-                      UserAvatar(photoUrl: _user!.photoUrl, radius: 60),
-                      const SizedBox(height: 16),
-                      Text(
-                        _user!.displayName.isEmpty ? 'Anonymous' : _user!.displayName,
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.fingerprint, color: Colors.grey.shade500, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'User ID',
+                            style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 8),
-                      InkWell(
+                      GestureDetector(
                         onTap: () {
                           Clipboard.setData(ClipboardData(text: _user!.uid));
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -101,20 +161,24 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           );
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.black.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'ID: ${_user!.uid.substring(0, 8)}...',
-                                style: TextStyle(color: Colors.grey.shade400),
+                                _user!.uid,
+                                style: TextStyle(
+                                  fontFamily: 'monospace',
+                                  fontSize: 11,
+                                  color: Colors.grey.shade400,
+                                ),
                               ),
-                              const SizedBox(width: 4),
-                              Icon(Icons.copy, size: 12, color: Colors.grey.shade500),
+                              const SizedBox(width: 8),
+                              Icon(Icons.copy, size: 14, color: Colors.grey.shade500),
                             ],
                           ),
                         ),
@@ -122,23 +186,24 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     ],
                   ),
                 ),
-
+                
                 const SizedBox(height: 24),
-
+                
                 // Action Buttons
-                GlassContainer(
-                  padding: const EdgeInsets.all(16),
-                  opacity: 0.2,
-                  child: Column(
-                    children: [
-                      _buildActionButton(context),
-                      if (_friendshipStatus == 'friend') ...[
+                if (!isOwnProfile)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      children: [
+                        _buildPrimaryAction(context),
                         const SizedBox(height: 12),
-                        _buildMessageButton(context),
+                        if (_friendshipStatus == 'friend')
+                          _buildMessageButton(context),
                       ],
-                    ],
+                    ),
                   ),
-                ),
+                  
+                const SizedBox(height: 32),
               ],
             ),
           ),
@@ -147,55 +212,42 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  Widget _buildActionButton(BuildContext context) {
+  Color _getStatusColor() {
+    switch (_friendshipStatus) {
+      case 'friend': return Colors.greenAccent;
+      case 'pending': return Colors.orangeAccent;
+      case 'incoming': return Colors.blueAccent;
+      default: return Colors.grey;
+    }
+  }
+
+  String _getStatusText() {
+    switch (_friendshipStatus) {
+      case 'friend': return '✓ Friends';
+      case 'pending': return '⏳ Request Sent';
+      case 'incoming': return '📨 Wants to be friends';
+      default: return 'Not Friends';
+    }
+  }
+
+  Widget _buildPrimaryAction(BuildContext context) {
     final friendService = Provider.of<FriendService>(context, listen: false);
 
     switch (_friendshipStatus) {
-      case 'self':
-        return const SizedBox.shrink();
-      
       case 'friend':
-        return SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () async {
-              final confirm = await showDialog<bool>(
-                context: context,
-                builder: (_) => AlertDialog(
-                  title: const Text('Remove Friend'),
-                  content: Text('Remove ${_user!.displayName} from friends?'),
-                  actions: [
-                    TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-                    ElevatedButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                      child: const Text('Remove'),
-                    ),
-                  ],
-                ),
-              );
-              if (confirm == true) {
-                await friendService.removeFriend(widget.userId);
-                if (mounted) {
-                  setState(() => _friendshipStatus = 'none');
-                }
-              }
-            },
-            icon: const Icon(Icons.person_remove, color: Colors.redAccent),
-            label: const Text('Remove Friend', style: TextStyle(color: Colors.redAccent)),
-          ),
-        );
-
+        return const SizedBox.shrink(); // Actions in menu
+      
       case 'pending':
         return SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
             onPressed: null,
             icon: const Icon(Icons.hourglass_empty),
-            label: const Text('Request Sent'),
+            label: const Text('Request Pending'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey.shade700,
+              backgroundColor: Colors.grey.shade800,
               foregroundColor: Colors.grey,
+              padding: const EdgeInsets.symmetric(vertical: 14),
             ),
           ),
         );
@@ -209,13 +261,17 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   await friendService.rejectFriendRequest(widget.userId);
                   if (mounted) setState(() => _friendshipStatus = 'none');
                 },
-                style: OutlinedButton.styleFrom(foregroundColor: Colors.redAccent),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.redAccent,
+                  side: const BorderSide(color: Colors.redAccent),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
                 child: const Text('Decline'),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: ElevatedButton(
+              child: ElevatedButton.icon(
                 onPressed: () async {
                   await friendService.acceptFriendRequest(widget.userId);
                   if (mounted) {
@@ -225,8 +281,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     );
                   }
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.greenAccent, foregroundColor: Colors.black),
-                child: const Text('Accept'),
+                icon: const Icon(Icons.check),
+                label: const Text('Accept'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.greenAccent,
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
               ),
             ),
           ],
@@ -250,6 +311,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.greenAccent,
               foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(vertical: 14),
             ),
           ),
         );
@@ -259,7 +321,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Widget _buildMessageButton(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton.icon(
+      child: OutlinedButton.icon(
         onPressed: () async {
           final chatService = Provider.of<DirectChatService>(context, listen: false);
           final chatId = await chatService.getOrCreateChat(widget.userId);
@@ -278,9 +340,66 @@ class _UserProfilePageState extends State<UserProfilePage> {
         },
         icon: const Icon(Icons.message),
         label: const Text('Send Message'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blueAccent,
+        style: OutlinedButton.styleFrom(
           foregroundColor: Colors.white,
+          side: const BorderSide(color: Colors.white30),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+        ),
+      ),
+    );
+  }
+
+  void _showOptionsMenu(BuildContext context) {
+    final friendService = Provider.of<FriendService>(context, listen: false);
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F2937),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade600,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.person_remove, color: Colors.redAccent),
+              title: const Text('Remove Friend', style: TextStyle(color: Colors.redAccent)),
+              onTap: () async {
+                Navigator.pop(context);
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: const Text('Remove Friend'),
+                    content: Text('Remove ${_user!.displayName} from your friends?'),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                        child: const Text('Remove'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true && mounted) {
+                  await friendService.removeFriend(widget.userId);
+                  setState(() => _friendshipStatus = 'none');
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
         ),
       ),
     );

@@ -10,9 +10,7 @@ import 'package:ready_check/services/friend_service.dart';
 import 'package:ready_check/screens/widgets/user_avatar.dart';
 import 'package:ready_check/screens/onboarding_screen.dart';
 import 'package:ready_check/screens/widgets/glass_container.dart';
-import 'package:ready_check/screens/friends/friend_list_page.dart';
-import 'package:ready_check/screens/friends/friend_requests_page.dart';
-import 'package:ready_check/screens/friends/user_profile_page.dart';
+import 'package:ready_check/screens/friends/friends_hub_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -56,37 +54,6 @@ class ProfilePage extends StatelessWidget {
           )
         ],
       )
-    );
-  }
-
-  void _addFriendById(BuildContext context) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Add Friend by ID"),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            hintText: "Enter friend's User ID",
-            prefixIcon: Icon(Icons.person_search),
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-          ElevatedButton(
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                Navigator.pop(context);
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => UserProfilePage(userId: controller.text.trim())),
-                );
-              }
-            },
-            child: const Text("Find"),
-          ),
-        ],
-      ),
     );
   }
 
@@ -180,61 +147,66 @@ class ProfilePage extends StatelessWidget {
                            ),
                          ),
                        ),
-                     ],
-                   ),
-                ),
-                
-                const SizedBox(height: 24),
-
-                // Friends Section
-                GlassContainer(
-                   padding: const EdgeInsets.symmetric(vertical: 8),
-                   opacity: themeService.isDarkMode ? 0.2 : 0.5,
-                   child: Column(
-                     children: [
-                       // Friends List
+                       const SizedBox(height: 20),
+                       // Friends Button - Clean single entry
                        StreamBuilder<List<Friend>>(
                          stream: friendService.streamFriends(),
-                         builder: (context, snapshot) {
-                           final count = snapshot.data?.length ?? 0;
-                           return ListTile(
-                             leading: const Icon(Icons.people, color: Colors.greenAccent),
-                             title: Text("Friends ($count)"),
-                             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FriendListPage())),
+                         builder: (context, friendSnap) {
+                           return StreamBuilder<List<FriendRequest>>(
+                             stream: friendService.streamFriendRequests(),
+                             builder: (context, requestSnap) {
+                               final friendCount = friendSnap.data?.length ?? 0;
+                               final requestCount = requestSnap.data?.length ?? 0;
+                               
+                               return InkWell(
+                                 onTap: () => Navigator.push(
+                                   context, 
+                                   MaterialPageRoute(builder: (_) => const FriendsHubPage())
+                                 ),
+                                 borderRadius: BorderRadius.circular(12),
+                                 child: Container(
+                                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                   decoration: BoxDecoration(
+                                     color: Colors.greenAccent.withOpacity(0.2),
+                                     borderRadius: BorderRadius.circular(12),
+                                     border: Border.all(color: Colors.greenAccent.withOpacity(0.5)),
+                                   ),
+                                   child: Row(
+                                     mainAxisSize: MainAxisSize.min,
+                                     children: [
+                                       const Icon(Icons.people, color: Colors.greenAccent),
+                                       const SizedBox(width: 10),
+                                       Text(
+                                         '$friendCount Friends',
+                                         style: const TextStyle(fontWeight: FontWeight.w600),
+                                       ),
+                                       if (requestCount > 0) ...[
+                                         const SizedBox(width: 10),
+                                         Container(
+                                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                           decoration: BoxDecoration(
+                                             color: Colors.orangeAccent,
+                                             borderRadius: BorderRadius.circular(12),
+                                           ),
+                                           child: Text(
+                                             '+$requestCount',
+                                             style: const TextStyle(
+                                               color: Colors.white, 
+                                               fontSize: 12, 
+                                               fontWeight: FontWeight.bold
+                                             ),
+                                           ),
+                                         ),
+                                       ],
+                                       const SizedBox(width: 8),
+                                       const Icon(Icons.arrow_forward_ios, size: 14),
+                                     ],
+                                   ),
+                                 ),
+                               );
+                             },
                            );
                          },
-                       ),
-                       const Divider(indent: 16, endIndent: 16),
-                       // Friend Requests
-                       StreamBuilder<List<FriendRequest>>(
-                         stream: friendService.streamFriendRequests(),
-                         builder: (context, snapshot) {
-                           final count = snapshot.data?.length ?? 0;
-                           return ListTile(
-                             leading: Icon(Icons.person_add, color: count > 0 ? Colors.orangeAccent : Colors.grey),
-                             title: Text("Friend Requests${count > 0 ? ' ($count)' : ''}"),
-                             trailing: count > 0 
-                                 ? Container(
-                                     padding: const EdgeInsets.all(6),
-                                     decoration: const BoxDecoration(
-                                       color: Colors.orangeAccent,
-                                       shape: BoxShape.circle,
-                                     ),
-                                     child: Text('$count', style: const TextStyle(color: Colors.white, fontSize: 12)),
-                                   )
-                                 : const Icon(Icons.arrow_forward_ios, size: 16),
-                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FriendRequestsPage())),
-                           );
-                         },
-                       ),
-                       const Divider(indent: 16, endIndent: 16),
-                       // Add Friend by ID
-                       ListTile(
-                         leading: const Icon(Icons.person_search, color: Colors.blueAccent),
-                         title: const Text("Add Friend by ID"),
-                         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                         onTap: () => _addFriendById(context),
                        ),
                      ],
                    ),
@@ -242,7 +214,7 @@ class ProfilePage extends StatelessWidget {
                 
                 const SizedBox(height: 24),
                 
-                // Settings Card
+                // Settings Card - Clean, minimal
                 GlassContainer(
                    padding: const EdgeInsets.symmetric(vertical: 8),
                    opacity: themeService.isDarkMode ? 0.2 : 0.5,
@@ -253,13 +225,6 @@ class ProfilePage extends StatelessWidget {
                          secondary: Icon(Icons.dark_mode, color: themeService.isDarkMode ? Colors.yellow : Colors.grey),
                          value: themeService.isDarkMode,
                          onChanged: (val) => themeService.toggleTheme(val),
-                       ),
-                       const Divider(indent: 16, endIndent: 16),
-                       ListTile(
-                         leading: const Icon(Icons.notifications_outlined),
-                         title: const Text("Notifications"),
-                         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                         onTap: () {},
                        ),
                        const Divider(indent: 16, endIndent: 16),
                        ListTile(
