@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "509159794054-es9ighnk7c4thp0uip8q62ianrqa73bi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.yamdimologi.dotaready",
+            "certificate_hash": "91fc8c4df05f5ac16edd3b5cb16c4bc60096ca1e"
+          }
+        },
+        {
           "client_id": "509159794054-75kotj0kdn539tbnpob6dmipn5kcn225.apps.googleusercontent.com",
           "client_type": 3
         }
