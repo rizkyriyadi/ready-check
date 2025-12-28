@@ -5,8 +5,10 @@ import 'package:ready_check/screens/circles/circle_list_page.dart';
 import 'package:ready_check/screens/explore/explore_page.dart';
 import 'package:ready_check/screens/profile/profile_page.dart';
 import 'package:ready_check/services/session_service.dart';
+import 'package:ready_check/services/update_service.dart';
 import 'package:ready_check/screens/session/ready_check_overlay.dart';
 import 'package:ready_check/screens/widgets/glass_container.dart';
+import 'package:ready_check/screens/widgets/update_dialog.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -30,6 +32,20 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _initSummonListener();
+    _checkForUpdates();
+  }
+  
+  /// Check for OTA updates on app start
+  void _checkForUpdates() async {
+    await Future.delayed(const Duration(seconds: 2)); // Wait for UI to settle
+    if (!mounted) return;
+    
+    final updateService = UpdateService();
+    final updateInfo = await updateService.checkForUpdate();
+    
+    if (updateInfo != null && mounted) {
+      showUpdateDialog(context, updateInfo);
+    }
   }
   
   void _initSummonListener() {
