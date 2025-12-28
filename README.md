@@ -1,67 +1,108 @@
-# Ready Check - Dota 2 Party Assistant 🛡️✅
+# Ready Check 🎮⚡
 
-A polished, game-inspired mobile application built with **Flutter** and **Firebase**. 
-It helps squads coordinate "Ready Checks" (like in Dota 2) with a full-screen, call-style overlay, real-time chat, and party management.
+A Dota 2-inspired "Ready Check" mobile application built with Flutter and Firebase. Coordinate with your squad before jumping into battle!
 
-![Ready Check Logo](assets/icon/icon.png)
+![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
+![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)
 
 ## Features
 
-- **🛡️ Circles (Parties)**: Create or join squads using unique invite codes.
-- **⚡ Summon / Ready Check**: 
-  - Host initiates a "Summon".
-  - All members receive a **Full Screen Notification** (like an incoming call), even if their phone is locked.
-  - 30-second timer to Accept or Decline.
-- **💬 Real-time Chat**: Live chat with online/offline status and typing indicators.
-- **🎨 Liquid Glass UI**: Custom-built, dark-themed glassmorphism interface.
-- **🔔 Push Notifications**: Integrated with FCM for background alerts.
+### 🔥 Core Features
+- **Circles (Squads)**: Create or join circles with friends using invite codes
+- **Ready Check (Summon)**: Trigger a full-screen summon notification to all circle members
+- **Real-time Chat**: Chat with your squad in each circle
+- **Push Notifications**: Get notified even when the app is closed (FCM)
 
-## Tech Stack
+### ✨ UI/UX
+- **Liquid Glass Design**: Modern dark theme with glassmorphism effects
+- **Full-Screen Summon Overlay**: Phone-call style notification with 30s timer
+- **Animated Results**: Green celebration or red failure animations
+- **Profile Customization**: Edit display name and profile photo
 
-- **Frontend**: Flutter (Mobile - Android/iOS)
-- **Backend**: Firebase (Firestore, Auth, Storage, Cloud Functions)
-- **State Management**: Provider
-- **Notifications**: Firebase Cloud Messaging (FCM) + Flutter Local Notifications + Full Screen Intent
+### 📱 Technical Highlights
+- Firebase Authentication (Google Sign-In)
+- Cloud Firestore for real-time data
+- Firebase Cloud Messaging (FCM)
+- Cloud Functions for server-side notifications
+- Full-screen intent support for lock screen notifications
 
----
+## Getting Started
 
-## Setup & Installation
+### Prerequisites
+- Flutter SDK (^3.10.0)
+- Firebase project with:
+  - Authentication (Google Sign-In enabled)
+  - Cloud Firestore
+  - Cloud Messaging
+  - Cloud Functions (Blaze plan required)
 
-**Prerequisites**:
-- Flutter SDK
-- Android Studio / Xcode
-- Firebase Project (Blaze Plan required for Cloud Functions)
+### Installation
 
-### 1. Clone the Repo
+1. **Clone the repository**
 ```bash
 git clone https://github.com/rizkyriyadi/ready-check.git
 cd ready-check
 ```
 
-### 2. Firebase Setup (Required)
-Since this repo does not include private keys:
-1. Create a project in [Firebase Console](https://console.firebase.google.com/).
-2. Add your Android app (Package Name: `com.yamdimologi.dotaready`).
-3. Download `google-services.json` and place it in `android/app/`.
-4. Enable **Authentication** (Google & Email/Password).
-5. Enable **Firestore Database** and **Storage**.
-6. **Deploy Cloud Functions** (for Notifications):
-   ```bash
-   cd functions
-   npm install
-   firebase deploy --only functions
-   ```
-
-### 3. Run the App
+2. **Install dependencies**
 ```bash
 flutter pub get
+```
+
+3. **Configure Firebase**
+   - Create a Firebase project at [Firebase Console](https://console.firebase.google.com)
+   - Add an Android app with package name: `com.yamdimologi.dotaready`
+   - Download `google-services.json` and place in `android/app/`
+   - Enable Google Sign-In in Authentication
+   - Set up Firestore security rules (see `firestore.rules.md`)
+
+4. **Deploy Cloud Functions**
+```bash
+cd functions
+npm install
+firebase deploy --only functions
+```
+
+5. **Run the app**
+```bash
 flutter run
 ```
 
+## Project Structure
+
+```
+lib/
+├── core/
+│   └── theme/          # App theme configuration
+├── models/             # Data models (Circle, Session, Message, etc.)
+├── screens/
+│   ├── auth/           # Login screens
+│   ├── circles/        # Circle list and detail pages
+│   ├── profile/        # User profile page
+│   ├── session/        # Ready check overlay
+│   └── widgets/        # Reusable widgets
+└── services/           # Firebase services (Auth, Firestore, FCM)
+
+functions/              # Cloud Functions for FCM triggers
+```
+
+## Screenshots
+
+*Coming soon*
+
+## Contributing
+
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
+
+## License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## Author
+
+**Rizky Riyadi** - [@rizkyriyadi](https://github.com/rizkyriyadi)
+
 ---
 
-## Note on Permissions
-This app requests `USE_FULL_SCREEN_INTENT` to show the Ready Check overlay over the lock screen. On some devices (Xiaomi/Samsung), you may need to manually grant "Display over other apps" or "Start in background" permissions.
-
----
-Built with ❤️ by [Rizky Riyadi](https://github.com/rizkyriyadi)
+Made with ❤️ and Flutter

@@ -18,15 +18,14 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# VS Code
+.vscode/
 
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
@@ -44,18 +43,33 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Firebase / Secrets (Added by Ready Check Setup)
-google-services.json
-GoogleService-Info.plist
-*-firebase-adminsdk-*.json
-firebase.json
-.firebaserc
+# ========================================
+# SENSITIVE FILES - DO NOT COMMIT
+# ========================================
 
-# Node Modules (Functions)
+# Firebase Admin SDK private key (CRITICAL - NEVER COMMIT)
+*firebase-adminsdk*.json
+ready-check-dota-firebase-adminsdk*.json
+
+# Firebase config (contains API keys - optional to exclude)
+# Uncomment if you want to keep google-services.json private:
+# android/app/google-services.json
+# ios/Runner/GoogleService-Info.plist
+
+# Environment files
+.env
+.env.*
+*.env
+
+# Keystore files
+*.keystore
+*.jks
+key.properties
+
+# Cloud Functions node_modules
 functions/node_modules/
-functions/package-lock.json
-firebase-debug.log*
+functions/.env
 
-# Flutter Plugins
-.flutter-plugins
-.flutter-plugins-dependencies
+# Firebase debug logs
+firebase-debug.log
+firebase-debug.*.log

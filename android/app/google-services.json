@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "509159794054",
+    "project_id": "ready-check-dota",
+    "storage_bucket": "ready-check-dota.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:509159794054:android:db991b339a5b760250f807",
+        "android_client_info": {
+          "package_name": "com.yamdimologi.dotaready"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "509159794054-75kotj0kdn539tbnpob6dmipn5kcn225.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDy8fy8C8B7E-YISm9VVNmIquh4zXs9Xig"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "509159794054-75kotj0kdn539tbnpob6dmipn5kcn225.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
