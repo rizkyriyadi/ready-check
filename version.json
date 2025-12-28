@@ -1,17 +1,19 @@
 {
-    "version": "1.1.1",
-    "build_number": 3,
+    "version": "1.2.0",
+    "build_number": 4,
     "release_date": "2025-12-29",
-    "release_notes": "FCM Notifications Fix",
+    "release_notes": "Friends Tab & Chat UX Update",
     "min_supported_version": "1.0.0",
     "update_url": {
-        "android": "https://github.com/rizkyriyadi/ready-check/releases/download/v1.1.0/ready-check-v1.1.0.apk",
+        "android": "https://github.com/rizkyriyadi/ready-check/releases/download/v1.2.0/ready-check-v1.2.0.apk",
         "ios": ""
     },
     "force_update": false,
     "changelog": [
-        "🔔 FCM Push Notifications Fix",
-        "� Friend System improvements",
-        "� DM notification support"
+        "👥 Friends tab in navbar - easier access",
+        "📄 Full profile page when clicking users in chat",
+        "💬 Add friend & message directly from profile",
+        "🔔 DM notification support",
+        "🔧 Check for Updates in settings"
     ]
 }

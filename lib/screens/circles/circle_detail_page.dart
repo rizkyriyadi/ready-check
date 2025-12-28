@@ -8,6 +8,7 @@ import 'package:ready_check/services/session_service.dart';
 import 'package:ready_check/screens/session/ready_check_overlay.dart';
 import 'package:ready_check/screens/widgets/user_avatar.dart';
 import 'package:ready_check/screens/widgets/glass_container.dart';
+import 'package:ready_check/screens/friends/user_profile_page.dart';
 import 'package:intl/intl.dart';
 
 class CircleDetailPage extends StatefulWidget {
@@ -205,25 +206,10 @@ class _CircleMessageBubble extends StatelessWidget {
   const _CircleMessageBubble({required this.message, required this.isMe});
   
   void _showUserProfile(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => GlassContainer(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(24),
-        opacity: 0.9,
-        color: Theme.of(context).canvasColor,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-             UserAvatar(photoUrl: message.senderPhotoUrl, radius: 40),
-             const SizedBox(height: 16),
-             Text(message.senderName, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
-             SelectableText("ID: ${message.senderId}", style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color)),
-             const SizedBox(height: 24),
-          ],
-        ),
-      )
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => UserProfilePage(userId: message.senderId),
+      ),
     );
   }
 
