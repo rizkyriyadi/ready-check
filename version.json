@@ -1,20 +1,19 @@
 {
-    "version": "1.0.1",
-    "build_number": 1,
+    "version": "1.1.0",
+    "build_number": 2,
     "release_date": "2025-12-29",
-    "release_notes": "Initial release with core features",
+    "release_notes": "Friends & Personal Chat Update",
     "min_supported_version": "1.0.0",
     "update_url": {
-        "android": "https://github.com/rizkyriyadi/ready-check/releases/latest/download/app-release.apk",
+        "android": "https://github.com/rizkyriyadi/ready-check/releases/download/v1.1.0/ready-check-1.1.0.apk",
         "ios": ""
     },
     "force_update": false,
     "changelog": [
-        "🔥 Ready Check (Summon) with full-screen notification",
-        "💬 Real-time Circle Chat",
-        "👥 Circle system with invite codes",
-        "🔔 Push notifications (FCM)",
-        "🎨 Liquid Glass UI design",
-        "🛡️ Custom app branding"
+        "� Friend System - Add, accept, reject friends",
+        "💬 Personal Chat (DM) with friends",
+        "� Updated Profile with Friends section",
+        "🔔 FCM Push Notifications",
+        "🎨 Liquid Glass UI"
     ]
 }

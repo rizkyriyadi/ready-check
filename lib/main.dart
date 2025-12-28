@@ -14,6 +14,8 @@ import 'package:ready_check/services/circle_service.dart';
 import 'package:ready_check/services/theme_service.dart';
 import 'package:ready_check/services/sound_service.dart';
 import 'package:ready_check/services/notification_service.dart';
+import 'package:ready_check/services/friend_service.dart';
+import 'package:ready_check/services/direct_chat_service.dart';
 
 // Global navigator key for FCM navigation
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -60,6 +62,8 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => SessionService()),
         ChangeNotifierProvider(create: (_) => CircleService()),
         ChangeNotifierProvider(create: (_) => ThemeService()),
+        ChangeNotifierProvider(create: (_) => FriendService()),
+        ChangeNotifierProvider(create: (_) => DirectChatService()),
         Provider<SoundService>(create: (_) => SoundService()),
         Provider<NotificationService>.value(value: widget.notificationService),
       ],

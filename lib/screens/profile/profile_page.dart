@@ -3,11 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:ready_check/models/friend_model.dart';
 import 'package:ready_check/services/auth_service.dart';
 import 'package:ready_check/services/theme_service.dart';
+import 'package:ready_check/services/friend_service.dart';
 import 'package:ready_check/screens/widgets/user_avatar.dart';
 import 'package:ready_check/screens/onboarding_screen.dart';
 import 'package:ready_check/screens/widgets/glass_container.dart';
+import 'package:ready_check/screens/friends/friend_list_page.dart';
+import 'package:ready_check/screens/friends/friend_requests_page.dart';
+import 'package:ready_check/screens/friends/user_profile_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -54,10 +59,42 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
+  void _addFriendById(BuildContext context) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Add Friend by ID"),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: "Enter friend's User ID",
+            prefixIcon: Icon(Icons.person_search),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () {
+              if (controller.text.isNotEmpty) {
+                Navigator.pop(context);
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => UserProfilePage(userId: controller.text.trim())),
+                );
+              }
+            },
+            child: const Text("Find"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
     final themeService = Provider.of<ThemeService>(context);
+    final friendService = Provider.of<FriendService>(context);
     final user = authService.user;
 
     if (user == null) return const SizedBox();
@@ -142,6 +179,62 @@ class ProfilePage extends StatelessWidget {
                              ],
                            ),
                          ),
+                       ),
+                     ],
+                   ),
+                ),
+                
+                const SizedBox(height: 24),
+
+                // Friends Section
+                GlassContainer(
+                   padding: const EdgeInsets.symmetric(vertical: 8),
+                   opacity: themeService.isDarkMode ? 0.2 : 0.5,
+                   child: Column(
+                     children: [
+                       // Friends List
+                       StreamBuilder<List<Friend>>(
+                         stream: friendService.streamFriends(),
+                         builder: (context, snapshot) {
+                           final count = snapshot.data?.length ?? 0;
+                           return ListTile(
+                             leading: const Icon(Icons.people, color: Colors.greenAccent),
+                             title: Text("Friends ($count)"),
+                             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FriendListPage())),
+                           );
+                         },
+                       ),
+                       const Divider(indent: 16, endIndent: 16),
+                       // Friend Requests
+                       StreamBuilder<List<FriendRequest>>(
+                         stream: friendService.streamFriendRequests(),
+                         builder: (context, snapshot) {
+                           final count = snapshot.data?.length ?? 0;
+                           return ListTile(
+                             leading: Icon(Icons.person_add, color: count > 0 ? Colors.orangeAccent : Colors.grey),
+                             title: Text("Friend Requests${count > 0 ? ' ($count)' : ''}"),
+                             trailing: count > 0 
+                                 ? Container(
+                                     padding: const EdgeInsets.all(6),
+                                     decoration: const BoxDecoration(
+                                       color: Colors.orangeAccent,
+                                       shape: BoxShape.circle,
+                                     ),
+                                     child: Text('$count', style: const TextStyle(color: Colors.white, fontSize: 12)),
+                                   )
+                                 : const Icon(Icons.arrow_forward_ios, size: 16),
+                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FriendRequestsPage())),
+                           );
+                         },
+                       ),
+                       const Divider(indent: 16, endIndent: 16),
+                       // Add Friend by ID
+                       ListTile(
+                         leading: const Icon(Icons.person_search, color: Colors.blueAccent),
+                         title: const Text("Add Friend by ID"),
+                         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                         onTap: () => _addFriendById(context),
                        ),
                      ],
                    ),
