@@ -1,20 +1,19 @@
 {
-    "version": "1.3.0",
-    "build_number": 8,
+    "version": "1.4.0",
+    "build_number": 9,
     "release_date": "2025-12-29",
-    "release_notes": "Enhanced Chat System",
+    "release_notes": "Unified Chat & Circle Management",
     "min_supported_version": "1.0.0",
     "update_url": {
-        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.3.0.apk",
+        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.4.0.apk",
         "ios": ""
     },
     "force_update": false,
     "changelog": [
-        "💬 New: Messages tab in navbar",
-        "📸 New: Send photos in chat",
-        "↩️ New: Reply to messages (long-press)",
-        "⌨️ New: Typing indicator",
-        "✓✓ New: Read receipts",
-        "📊 New: Unread message badges"
+        "💬 Circle chat: photos, replies, typing indicator",
+        "👆 Reply: double-tap to reply (better UX)",
+        "⚙️ Circle settings: edit name, change photo",
+        "🚪 Leave circle option",
+        "👥 Add members from friends list"
     ]
 }

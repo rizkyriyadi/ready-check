@@ -54,17 +54,20 @@ service cloud.firestore {
       }
     }
 
-    // DIRECT CHATS (DMs) - SIMPLIFIED: allow read/create for any auth user
+    // DIRECT CHATS (DMs)
     match /directChats/{chatId} {
-      // Allow read to check if chat exists (doc may not exist yet)
+      // Read: any auth user can read (needed to check if chat exists)
       allow read: if request.auth != null;
-      // Allow create if user is in the new doc's participants
+      // Create: user must be in participants
       allow create: if request.auth != null && request.auth.uid in request.resource.data.participants;
-      // Allow update only if user is already a participant
+      // Update: participants can update (for typing, unread, lastMessage)
       allow update: if request.auth != null && request.auth.uid in resource.data.participants;
       
       match /messages/{messageId} {
-        allow read, create: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/directChats/$(chatId)).data.participants;
+        allow read: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/directChats/$(chatId)).data.participants;
+        allow create: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/directChats/$(chatId)).data.participants;
+        // Allow update for read receipts
+        allow update: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/directChats/$(chatId)).data.participants;
       }
     }
 

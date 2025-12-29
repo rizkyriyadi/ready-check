@@ -227,7 +227,7 @@ class _DirectChatPageState extends State<DirectChatPage> {
                     final isMe = msg.senderId == currentUid;
 
                     return GestureDetector(
-                      onLongPress: () => _setReply(msg),
+                      onDoubleTap: () => _setReply(msg),
                       child: _buildMessageBubble(msg, isMe),
                     );
                   },
