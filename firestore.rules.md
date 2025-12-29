@@ -55,10 +55,12 @@ service cloud.firestore {
       }
     }
 
-    // DIRECT CHATS (DMs)
+    // DIRECT CHATS (DMs) - FIXED: use request.resource for create
     match /directChats/{chatId} {
-      allow read, write: if request.auth != null && request.auth.uid in resource.data.participants;
-      allow create: if request.auth != null;
+      // Read/Update: user must be a participant (check existing doc)
+      allow read, update: if request.auth != null && request.auth.uid in resource.data.participants;
+      // Create: user must be in the NEW doc's participants
+      allow create: if request.auth != null && request.auth.uid in request.resource.data.participants;
       
       match /messages/{messageId} {
         allow read, create: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/directChats/$(chatId)).data.participants;

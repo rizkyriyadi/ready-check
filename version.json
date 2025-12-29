@@ -1,17 +1,16 @@
 {
-    "version": "1.2.2",
-    "build_number": 6,
+    "version": "1.2.3",
+    "build_number": 7,
     "release_date": "2025-12-29",
-    "release_notes": "Summon Popup Fix & DM Improvements",
+    "release_notes": "DM Fix & Rules Update",
     "min_supported_version": "1.0.0",
     "update_url": {
-        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.2.2.apk",
+        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.2.3.apk",
         "ios": ""
     },
     "force_update": false,
     "changelog": [
-        "⚡ Summon: Direct popup like phone call",
-        "🔧 DM: Better error handling",
-        "🎵 Custom summon audio (Chainsaw Man OST)"
+        "🔧 Fix: DM chat creation now works",
+        "📝 Updated Firestore rules"
     ]
 }
