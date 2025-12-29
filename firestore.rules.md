@@ -7,20 +7,39 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
+      
+      // Friends subcollection - owner can write, anyone can read
+      match /friends/{friendId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && (
+          request.auth.uid == userId || request.auth.uid == friendId
+        );
+      }
+      
+      // Friend Requests - user can read/delete their own, others can create
+      match /friendRequests/{requestId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow create: if request.auth != null;
+        allow delete: if request.auth != null && (
+          request.auth.uid == userId || request.auth.uid == requestId
+        );
+      }
+      
+      // Sent Requests - track requests I sent (needed to check pending status)
+      match /sentRequests/{targetId} {
+        allow read: if request.auth != null && (
+          request.auth.uid == userId || request.auth.uid == targetId
+        );
+        allow write: if request.auth != null && (
+          request.auth.uid == userId || request.auth.uid == targetId
+        );
+      }
     }
 
     // CIRCLES (Groups)
     match /circles/{circleId} {
-      // 1. Allow READ by any authenticated user 
-      // (Required for "Join by Code" to work)
       allow read: if request.auth != null;
-      
-      // 2. Allow CREATE by any authenticated user
       allow create: if request.auth != null;
-      
-      // 3. Allow UPDATE if:
-      //    a) User is already a member (Existing member update)
-      //    b) OR User is joining (Adding themselves to memberIds)
       allow update: if request.auth != null && (
         request.auth.uid in resource.data.memberIds || 
         (
@@ -36,13 +55,23 @@ service cloud.firestore {
       }
     }
 
+    // DIRECT CHATS (DMs)
+    match /directChats/{chatId} {
+      allow read, write: if request.auth != null && request.auth.uid in resource.data.participants;
+      allow create: if request.auth != null;
+      
+      match /messages/{messageId} {
+        allow read, create: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/directChats/$(chatId)).data.participants;
+      }
+    }
+
     // SESSIONS (Lobbies)
     match /sessions/{sessionId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null;
       allow update: if request.auth != null;
 
-      match /participants/{userId} {
+      match /participants/{partId} {
         allow read, write: if request.auth != null;
       }
       match /messages/{messageId} {

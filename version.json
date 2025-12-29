@@ -1,19 +1,18 @@
 {
-    "version": "1.2.0",
-    "build_number": 4,
+    "version": "1.2.1",
+    "build_number": 5,
     "release_date": "2025-12-29",
-    "release_notes": "Friends Tab & Chat UX Update",
+    "release_notes": "Bug Fixes & Summon Audio Update",
     "min_supported_version": "1.0.0",
     "update_url": {
-        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.2.0.apk",
+        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.2.1.apk",
         "ios": ""
     },
     "force_update": false,
     "changelog": [
-        "👥 Friends tab in navbar - easier access",
-        "📄 Full profile page when clicking users in chat",
-        "💬 Add friend & message directly from profile",
-        "🔔 DM notification support",
-        "🔧 Check for Updates in settings"
+        "🔧 Fix: User profiles now visible for all users",
+        "🔧 Fix: Send Message button working",
+        "⚡ Summon: Direct popup without notification",
+        "🎵 New: Custom summon audio (Chainsaw Man OST)"
     ]
 }

@@ -121,10 +121,14 @@ class FcmService {
     final type = data['type'];
 
     if (type == 'summon') {
-      // Show high-priority notification for summon
-      _showSummonNotification(message);
-    } else if (type == 'chat') {
-      // Show regular notification for chat
+      // Navigate directly to ReadyCheckOverlay + play audio (no notification)
+      final sessionId = data['sessionId'];
+      if (sessionId != null) {
+        _navigateToReadyCheck(sessionId);
+        // Audio is played in ReadyCheckOverlay itself
+      }
+    } else if (type == 'chat' || type == 'dm') {
+      // Show regular notification for chat/dm
       _showChatNotification(message);
     }
   }

@@ -39,7 +39,8 @@ class _ReadyCheckOverlayState extends State<ReadyCheckOverlay> with TickerProvid
   void _playSound() async {
     try {
       await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-      await _audioPlayer.play(AssetSource('audio/summon.mp3'));
+      await _audioPlayer.setVolume(1.0);
+      await _audioPlayer.play(AssetSource('audio/summon_sound.mp3'));
     } catch (e) {
       debugPrint("Audio Play Error (Ignored): $e");
     }
