@@ -9,6 +9,7 @@ import 'package:ready_check/models/circle_model.dart';
 import 'package:ready_check/services/circle_service.dart';
 import 'package:ready_check/services/auth_service.dart';
 import 'package:ready_check/services/session_service.dart';
+import 'package:ready_check/services/call_service.dart';
 import 'package:ready_check/screens/session/ready_check_overlay.dart';
 import 'package:ready_check/screens/widgets/user_avatar.dart';
 import 'package:ready_check/screens/widgets/glass_container.dart';
@@ -16,6 +17,7 @@ import 'package:ready_check/screens/widgets/mention_widgets.dart';
 import 'package:ready_check/screens/widgets/photo_viewer.dart';
 import 'package:ready_check/screens/friends/user_profile_page.dart';
 import 'package:ready_check/screens/circles/circle_settings_page.dart';
+import 'package:ready_check/screens/call/voice_call_page.dart';
 import 'package:intl/intl.dart';
 
 class CircleDetailPage extends StatefulWidget {
@@ -323,6 +325,33 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
           },
         ),
         actions: [
+          // Group call button
+          IconButton(
+            onPressed: () async {
+              final callService = Provider.of<CallService>(context, listen: false);
+              final memberIds = _circleMembers.map((m) => m['uid'] as String).toList();
+              memberIds.remove(authService.user?.uid); // Remove self
+              if (memberIds.isEmpty) return;
+              final callId = await callService.startCall(
+                receiverIds: memberIds,
+                circleId: widget.circleId,
+              );
+              if (callId != null && mounted) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => VoiceCallPage(
+                      callId: callId,
+                      isOutgoing: true,
+                      isGroupCall: true,
+                      circleName: widget.circleName,
+                    ),
+                  ),
+                );
+              }
+            },
+            icon: const Icon(Icons.call, color: Colors.greenAccent),
+            tooltip: "Group Call",
+          ),
           IconButton(
             onPressed: _triggerSummon,
             icon: const Icon(Icons.bolt, color: Colors.amberAccent),

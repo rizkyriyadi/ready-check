@@ -1,16 +1,17 @@
 {
-    "version": "1.4.4",
-    "build_number": 13,
+    "version": "1.5.0",
+    "build_number": 14,
     "release_date": "2025-12-29",
-    "release_notes": "Fix Ready Check member names",
+    "release_notes": "Voice Call Feature",
     "min_supported_version": "1.0.0",
     "update_url": {
-        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.4.4.apk",
+        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.5.0.apk",
         "ios": ""
     },
     "force_update": false,
     "changelog": [
-        "🐛 Fix: Ready Check popup shows real member names",
-        "🐛 Fix: Member photos display correctly"
+        "📞 Voice Call: 1-on-1 dan Group call",
+        "🎙️ Mute/Speaker controls",
+        "⏱️ Call duration timer"
     ]
 }

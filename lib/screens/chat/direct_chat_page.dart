@@ -5,22 +5,26 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ready_check/models/chat_model.dart';
 import 'package:ready_check/services/direct_chat_service.dart';
+import 'package:ready_check/services/call_service.dart';
 import 'package:ready_check/screens/widgets/glass_container.dart';
 import 'package:ready_check/screens/widgets/user_avatar.dart';
 import 'package:ready_check/screens/widgets/mention_widgets.dart';
 import 'package:ready_check/screens/widgets/photo_viewer.dart';
+import 'package:ready_check/screens/call/voice_call_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class DirectChatPage extends StatefulWidget {
   final String chatId;
   final String otherUserName;
   final String otherUserPhoto;
+  final String? otherUserId;
 
   const DirectChatPage({
     super.key,
     required this.chatId,
     required this.otherUserName,
     required this.otherUserPhoto,
+    this.otherUserId,
   });
 
   @override
@@ -178,6 +182,29 @@ class _DirectChatPageState extends State<DirectChatPage> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.call, color: Colors.greenAccent),
+            onPressed: () async {
+              final callService = Provider.of<CallService>(context, listen: false);
+              if (widget.otherUserId == null) return;
+              final callId = await callService.startCall(receiverIds: [widget.otherUserId!]);
+              if (callId != null && mounted) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => VoiceCallPage(
+                      callId: callId,
+                      isOutgoing: true,
+                      otherUserName: widget.otherUserName,
+                      otherUserPhoto: widget.otherUserPhoto,
+                    ),
+                  ),
+                );
+              }
+            },
+            tooltip: 'Voice Call',
+          ),
+        ],
       ),
       body: Column(
         children: [
