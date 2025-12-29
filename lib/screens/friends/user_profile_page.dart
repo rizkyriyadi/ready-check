@@ -323,19 +323,37 @@ class _UserProfilePageState extends State<UserProfilePage> {
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: () async {
-          final chatService = Provider.of<DirectChatService>(context, listen: false);
-          final chatId = await chatService.getOrCreateChat(widget.userId);
-          
-          if (chatId != null && mounted) {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => DirectChatPage(
-                  chatId: chatId,
-                  otherUserName: _user!.displayName,
-                  otherUserPhoto: _user!.photoUrl,
+          debugPrint('DM Button pressed for user: ${widget.userId}');
+          try {
+            final chatService = Provider.of<DirectChatService>(context, listen: false);
+            debugPrint('Getting/creating chat...');
+            final chatId = await chatService.getOrCreateChat(widget.userId);
+            debugPrint('Chat ID: $chatId');
+            
+            if (chatId != null && mounted) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => DirectChatPage(
+                    chatId: chatId,
+                    otherUserName: _user!.displayName,
+                    otherUserPhoto: _user!.photoUrl,
+                  ),
                 ),
-              ),
-            );
+              );
+            } else {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Could not create chat. Please try again.')),
+                );
+              }
+            }
+          } catch (e) {
+            debugPrint('DM Button error: $e');
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: $e')),
+              );
+            }
           }
         },
         icon: const Icon(Icons.message),

@@ -43,25 +43,18 @@ exports.onSessionCreate = functions.firestore
       return null;
     }
 
-    // Send FCM message
+    // Send data-only FCM message (NO notification payload)
+    // This allows Flutter background handler to show fullScreenIntent notification
     const message = {
-      notification: {
-        title: "⚡ READY CHECK!",
-        body: `${session.activityTitle || "Your squad"} needs you!`,
-      },
       data: {
         type: "summon",
         sessionId: sessionId,
+        title: "⚡ READY CHECK!",
+        body: `${session.activityTitle || "Your squad"} needs you!`,
         click_action: "FLUTTER_NOTIFICATION_CLICK",
       },
       android: {
         priority: "high",
-        notification: {
-          channelId: "summon_channel",
-          priority: "max",
-          defaultSound: true,
-          defaultVibrateTimings: true,
-        },
       },
       tokens: tokens,
     };

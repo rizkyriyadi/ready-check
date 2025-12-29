@@ -1,18 +1,17 @@
 {
-    "version": "1.2.1",
-    "build_number": 5,
+    "version": "1.2.2",
+    "build_number": 6,
     "release_date": "2025-12-29",
-    "release_notes": "Bug Fixes & Summon Audio Update",
+    "release_notes": "Summon Popup Fix & DM Improvements",
     "min_supported_version": "1.0.0",
     "update_url": {
-        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.2.1.apk",
+        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.2.2.apk",
         "ios": ""
     },
     "force_update": false,
     "changelog": [
-        "🔧 Fix: User profiles now visible for all users",
-        "🔧 Fix: Send Message button working",
-        "⚡ Summon: Direct popup without notification",
-        "🎵 New: Custom summon audio (Chainsaw Man OST)"
+        "⚡ Summon: Direct popup like phone call",
+        "🔧 DM: Better error handling",
+        "🎵 Custom summon audio (Chainsaw Man OST)"
     ]
 }

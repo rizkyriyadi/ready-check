@@ -216,7 +216,45 @@ class FcmService {
 // Background message handler (must be top-level function)
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  debugPrint('Background message: ${message.notification?.title}');
-  // The notification will be shown automatically by the system
-  // We just need to handle data here if needed
+  debugPrint('Background message received: ${message.data}');
+  
+  final data = message.data;
+  final type = data['type'];
+  
+  if (type == 'summon') {
+    // Show fullScreenIntent notification for summon
+    final FlutterLocalNotificationsPlugin localNotifications = FlutterLocalNotificationsPlugin();
+    
+    // Initialize
+    const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('@mipmap/launcher_icon');
+    const InitializationSettings initSettings = InitializationSettings(android: androidSettings);
+    await localNotifications.initialize(initSettings);
+    
+    final sessionId = data['sessionId'] ?? '';
+    final title = data['title'] ?? '⚡ READY CHECK!';
+    final body = data['body'] ?? 'Your squad needs you!';
+    
+    await localNotifications.show(
+      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title,
+      body,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          'summon_channel',
+          'Ready Check',
+          channelDescription: 'Notifications for Ready Check summons',
+          importance: Importance.max,
+          priority: Priority.max,
+          fullScreenIntent: true, // Shows like phone call
+          category: AndroidNotificationCategory.call,
+          visibility: NotificationVisibility.public,
+          playSound: false, // We play our own sound in the overlay
+          enableVibration: true,
+          ongoing: true,
+          autoCancel: false,
+        ),
+      ),
+      payload: 'summon:$sessionId',
+    );
+  }
 }
