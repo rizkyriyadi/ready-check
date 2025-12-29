@@ -51,10 +51,9 @@ app.*.map.json
 *firebase-adminsdk*.json
 ready-check-dota-firebase-adminsdk*.json
 
-# Firebase config (contains API keys - optional to exclude)
-# Uncomment if you want to keep google-services.json private:
-# android/app/google-services.json
-# ios/Runner/GoogleService-Info.plist
+# Firebase config (contains API keys)
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
 
 # Environment files
 .env
