@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -222,10 +223,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   final type = data['type'];
   
   if (type == 'summon') {
-    // Show fullScreenIntent notification for summon
     final FlutterLocalNotificationsPlugin localNotifications = FlutterLocalNotificationsPlugin();
     
-    // Initialize
+    // Initialize with callback
     const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('@mipmap/launcher_icon');
     const InitializationSettings initSettings = InitializationSettings(android: androidSettings);
     await localNotifications.initialize(initSettings);
@@ -234,24 +234,49 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     final title = data['title'] ?? '⚡ READY CHECK!';
     final body = data['body'] ?? 'Your squad needs you!';
     
+    // Create notification with call style and full screen intent
     await localNotifications.show(
-      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      1, // Fixed ID for summon notifications
       title,
       body,
       NotificationDetails(
         android: AndroidNotificationDetails(
           'summon_channel',
           'Ready Check',
-          channelDescription: 'Notifications for Ready Check summons',
+          channelDescription: 'Ready Check summons',
           importance: Importance.max,
           priority: Priority.max,
-          fullScreenIntent: true, // Shows like phone call
+          fullScreenIntent: true,
           category: AndroidNotificationCategory.call,
           visibility: NotificationVisibility.public,
-          playSound: false, // We play our own sound in the overlay
+          ticker: 'Ready Check!',
+          colorized: true,
+          color: const Color(0xFF4CAF50),
           enableVibration: true,
+          vibrationPattern: Int64List.fromList([0, 1000, 500, 1000, 500, 1000]),
           ongoing: true,
           autoCancel: false,
+          timeoutAfter: 30000, // Auto dismiss after 30s
+          styleInformation: BigTextStyleInformation(
+            body,
+            htmlFormatBigText: true,
+            contentTitle: title,
+            htmlFormatContentTitle: true,
+          ),
+          actions: <AndroidNotificationAction>[
+            const AndroidNotificationAction(
+              'accept',
+              '✓ Accept',
+              showsUserInterface: true,
+              cancelNotification: true,
+            ),
+            const AndroidNotificationAction(
+              'decline',
+              '✗ Decline',
+              showsUserInterface: true,
+              cancelNotification: true,
+            ),
+          ],
         ),
       ),
       payload: 'summon:$sessionId',

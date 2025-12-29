@@ -8,7 +8,7 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
       
-      // Friends subcollection - owner can write, anyone can read
+      // Friends subcollection
       match /friends/{friendId} {
         allow read: if request.auth != null;
         allow write: if request.auth != null && (
@@ -16,7 +16,7 @@ service cloud.firestore {
         );
       }
       
-      // Friend Requests - user can read/delete their own, others can create
+      // Friend Requests
       match /friendRequests/{requestId} {
         allow read: if request.auth != null && request.auth.uid == userId;
         allow create: if request.auth != null;
@@ -25,7 +25,7 @@ service cloud.firestore {
         );
       }
       
-      // Sent Requests - track requests I sent (needed to check pending status)
+      // Sent Requests
       match /sentRequests/{targetId} {
         allow read: if request.auth != null && (
           request.auth.uid == userId || request.auth.uid == targetId
@@ -49,18 +49,19 @@ service cloud.firestore {
         )
       );
 
-      // Circle Messages
       match /messages/{messageId} {
         allow read, create: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/circles/$(circleId)).data.memberIds;
       }
     }
 
-    // DIRECT CHATS (DMs) - FIXED: use request.resource for create
+    // DIRECT CHATS (DMs) - SIMPLIFIED: allow read/create for any auth user
     match /directChats/{chatId} {
-      // Read/Update: user must be a participant (check existing doc)
-      allow read, update: if request.auth != null && request.auth.uid in resource.data.participants;
-      // Create: user must be in the NEW doc's participants
+      // Allow read to check if chat exists (doc may not exist yet)
+      allow read: if request.auth != null;
+      // Allow create if user is in the new doc's participants
       allow create: if request.auth != null && request.auth.uid in request.resource.data.participants;
+      // Allow update only if user is already a participant
+      allow update: if request.auth != null && request.auth.uid in resource.data.participants;
       
       match /messages/{messageId} {
         allow read, create: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/directChats/$(chatId)).data.participants;

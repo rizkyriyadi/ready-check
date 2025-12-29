@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ready_check/screens/circles/circle_list_page.dart';
-import 'package:ready_check/screens/explore/explore_page.dart';
+import 'package:ready_check/screens/chat/messages_list_page.dart';
 import 'package:ready_check/screens/friends/friends_hub_page.dart';
 import 'package:ready_check/screens/profile/profile_page.dart';
 import 'package:ready_check/services/session_service.dart';
@@ -25,8 +25,8 @@ class _MainScreenState extends State<MainScreen> {
   
   final List<Widget> _pages = [
     const CircleListPage(),
+    const MessagesListPage(),
     const FriendsHubPage(),
-    const ExplorePage(),
     const ProfilePage(),
   ];
 
@@ -110,14 +110,14 @@ class _MainScreenState extends State<MainScreen> {
                  label: 'Circles',
               ),
               NavigationDestination(
+                 icon: Icon(Icons.chat_bubble_outline),
+                 selectedIcon: Icon(Icons.chat_bubble),
+                 label: 'Messages',
+              ),
+              NavigationDestination(
                  icon: Icon(Icons.people_outline),
                  selectedIcon: Icon(Icons.people),
                  label: 'Friends',
-              ),
-              NavigationDestination(
-                 icon: Icon(Icons.explore_outlined),
-                 selectedIcon: Icon(Icons.explore),
-                 label: 'Explore',
               ),
               NavigationDestination(
                  icon: Icon(Icons.person_outline),

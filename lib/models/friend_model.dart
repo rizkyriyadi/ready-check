@@ -64,6 +64,7 @@ class DirectChat {
   final String otherUserPhoto;
   final String lastMessage;
   final DateTime lastMessageAt;
+  final int unreadCount;
 
   DirectChat({
     required this.id,
@@ -73,12 +74,17 @@ class DirectChat {
     required this.otherUserPhoto,
     required this.lastMessage,
     required this.lastMessageAt,
+    this.unreadCount = 0,
   });
 
   factory DirectChat.fromFirestore(DocumentSnapshot doc, String currentUid) {
     final data = doc.data() as Map<String, dynamic>;
     final participants = List<String>.from(data['participants'] ?? []);
     final otherUid = participants.firstWhere((p) => p != currentUid, orElse: () => '');
+    
+    // Get unread count for current user
+    final unreadCounts = data['unreadCount'] as Map<String, dynamic>?;
+    final unread = unreadCounts?[currentUid] ?? 0;
     
     return DirectChat(
       id: doc.id,
@@ -88,6 +94,7 @@ class DirectChat {
       otherUserPhoto: data['userPhotos']?[otherUid] ?? '',
       lastMessage: data['lastMessage'] ?? '',
       lastMessageAt: (data['lastMessageAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      unreadCount: unread is int ? unread : 0,
     );
   }
 }
