@@ -100,6 +100,7 @@ class FriendListPage extends StatelessWidget {
             chatId: chatId,
             otherUserName: friend.displayName,
             otherUserPhoto: friend.photoUrl,
+            otherUserId: friend.uid,
           ),
         ),
       );

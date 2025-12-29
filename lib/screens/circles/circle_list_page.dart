@@ -114,7 +114,7 @@ class CircleListPage extends StatelessWidget {
         title: const Text("My Circles", style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 100), // Avoid Glass Navbar overlap
+        padding: const EdgeInsets.only(bottom: 120), // Increased to avoid Glass Navbar overlap
         child: FloatingActionButton.extended(
           onPressed: () => _showActionDialog(context),
           heroTag: 'circle_fab', // Unique tag

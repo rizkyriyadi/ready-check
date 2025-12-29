@@ -140,6 +140,7 @@ class _ChatListTile extends StatelessWidget {
               chatId: chat.id,
               otherUserName: chat.otherUserName,
               otherUserPhoto: chat.otherUserPhoto,
+              otherUserId: chat.otherUserId,
             ),
           ),
         );

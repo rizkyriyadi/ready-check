@@ -1,10 +1,97 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const { RtcTokenBuilder, RtcRole } = require("agora-access-token");
 
 admin.initializeApp();
 
 const db = admin.firestore();
 const messaging = admin.messaging();
+
+const APP_ID = "4aae908d259f4674aeb70b252110a314";
+const APP_CERTIFICATE = "c0665a7c9cf7428593dd3df2224428a6";
+
+// Generate Agora Token
+exports.generateToken = functions.https.onCall((data, context) => {
+  // Ensure user is authenticated
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "User must be logged in.");
+  }
+
+  const channelName = data.channelName;
+  const uid = data.uid || 0; // 0 for Agora default
+  const role = RtcRole.PUBLISHER;
+  const expirationTimeInSeconds = 3600; // 1 hour
+  const currentTimestamp = Math.floor(Date.now() / 1000);
+  const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
+
+  if (!channelName) {
+    throw new functions.https.HttpsError("invalid-argument", "The function must be called with a channelName.");
+  }
+
+  console.log(`Generating token for channel: ${channelName}, uid: ${uid}`);
+
+  const token = RtcTokenBuilder.buildTokenWithUid(
+    APP_ID,
+    APP_CERTIFICATE,
+    channelName,
+    uid,
+    role,
+    privilegeExpiredTs
+  );
+
+  return { token: token };
+});
+
+// Send Call Notification when a call is created in Firestore
+exports.onCallCreated = functions.firestore
+  .document("calls/{callId}")
+  .onCreate(async (snapshot, context) => {
+    const callData = snapshot.data();
+    const callId = context.params.callId;
+    const callerName = callData.callerName;
+    const receiverIds = callData.receiverIds;
+
+    console.log(`New call from ${callerName} to ${receiverIds.length} users`);
+
+    // 1. Get FCM tokens for all receivers
+    const tokens = [];
+    for (const uid of receiverIds) {
+      const userDoc = await db.collection("users").doc(uid).get();
+      if (userDoc.exists && userDoc.data().fcmToken) {
+        tokens.push(userDoc.data().fcmToken);
+      }
+    }
+
+    if (tokens.length === 0) {
+      console.log("No tokens found for receivers");
+      return null;
+    }
+
+    // 2. Send Data Message (High Priority)
+    const payload = {
+      data: {
+        type: "call",
+        callId: callId,
+        callerName: callerName,
+        isGroup: callData.receiverIds && callData.receiverIds.length > 1 ? "true" : "false",
+        click_action: "FLUTTER_NOTIFICATION_CLICK",
+        title: "Incoming Call",
+        body: `${callerName} is calling...`
+      },
+      android: {
+        priority: "high",
+        ttl: 0, // Deliver immediately or drop
+      },
+      tokens: tokens, // Send to multiple devices
+    };
+
+    try {
+      const response = await messaging.sendEachForMulticast(payload);
+      console.log("Notifications sent:", response.successCount);
+    } catch (error) {
+      console.error("Error sending notification:", error);
+    }
+  });
 
 /**
  * Triggered when a new session (Ready Check) is created.

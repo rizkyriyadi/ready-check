@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ready_check/models/chat_model.dart';
 import 'package:ready_check/services/direct_chat_service.dart';
 import 'package:ready_check/services/call_service.dart';
@@ -255,6 +256,7 @@ class _DirectChatPageState extends State<DirectChatPage> {
                     final isMe = msg.senderId == currentUid;
 
                     return GestureDetector(
+                      key: ValueKey(msg.id), // Key helps prevent unnecessary rebuilds
                       onDoubleTap: () => _setReply(msg),
                       child: _buildMessageBubble(msg, isMe),
                     );
@@ -422,18 +424,20 @@ class _DirectChatPageState extends State<DirectChatPage> {
                       },
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          msg.imageUrl!,
+                        child: CachedNetworkImage(
+                          imageUrl: msg.imageUrl!,
                           width: 200,
                           fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return const SizedBox(
-                              width: 200,
-                              height: 150,
-                              child: Center(child: CircularProgressIndicator()),
-                            );
-                          },
+                          placeholder: (context, url) => const SizedBox(
+                            width: 200,
+                            height: 150,
+                            child: Center(child: CircularProgressIndicator()),
+                          ),
+                          errorWidget: (context, url, error) => const SizedBox(
+                            width: 200, 
+                            height: 150, 
+                            child: Icon(Icons.broken_image, color: Colors.grey)
+                          ),
                         ),
                       ),
                     ),

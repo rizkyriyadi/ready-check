@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -77,6 +78,22 @@ class CallService extends ChangeNotifier {
     }
   }
 
+  // Fetch Agora Token from Cloud Function
+  Future<String> _fetchToken(String channelName) async {
+    try {
+      final result = await FirebaseFunctions.instance
+          .httpsCallable('generateToken')
+          .call({
+        'channelName': channelName,
+        'uid': 0,
+      });
+      return result.data['token'] as String;
+    } catch (e) {
+      debugPrint('Error fetching token: $e');
+      rethrow;
+    }
+  }
+
   // Start a call (1-on-1 or group)
   Future<String?> startCall({
     required List<String> receiverIds,
@@ -87,6 +104,12 @@ class CallService extends ChangeNotifier {
 
     try {
       if (!await initializeEngine()) return null;
+
+      // Leave any existing channel first
+      if (_currentCallId != null) {
+        await _engine?.leaveChannel();
+        _remoteUsers.clear();
+      }
 
       final callRef = _firestore.collection('calls').doc();
       final channelName = callRef.id;
@@ -105,9 +128,18 @@ class CallService extends ChangeNotifier {
       await callRef.set(call.toMap());
       _currentCallId = callRef.id;
 
+      // Fetch Token
+      String token = '';
+      try {
+        token = await _fetchToken(channelName);
+      } catch (e) {
+        debugPrint('Failed to generate token: $e');
+        return null;
+      }
+
       // Join the channel
       await _engine!.joinChannel(
-        token: '', // No token for testing (use token server in production)
+        token: token, // Use generated token
         channelId: channelName,
         uid: 0,
         options: const ChannelMediaOptions(
@@ -130,6 +162,12 @@ class CallService extends ChangeNotifier {
     try {
       if (!await initializeEngine()) return false;
 
+      // Leave any existing channel first
+      if (_currentCallId != null) {
+        await _engine?.leaveChannel();
+        _remoteUsers.clear();
+      }
+
       final callDoc = await _firestore.collection('calls').doc(callId).get();
       if (!callDoc.exists) return false;
 
@@ -141,9 +179,18 @@ class CallService extends ChangeNotifier {
         'status': CallStatus.ongoing.name,
       });
 
+      // Fetch Token
+      String token = '';
+      try {
+        token = await _fetchToken(call.channelName);
+      } catch (e) {
+        debugPrint('Failed to generate token: $e');
+        return false;
+      }
+
       // Join the channel
       await _engine!.joinChannel(
-        token: '',
+        token: token,
         channelId: call.channelName,
         uid: 0,
         options: const ChannelMediaOptions(

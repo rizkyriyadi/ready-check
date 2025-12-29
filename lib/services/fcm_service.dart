@@ -95,6 +95,19 @@ class FcmService {
     await _localNotifications
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(chatChannel);
+        
+    // Create call channel (reuse summon settings for high priority)
+    const AndroidNotificationChannel callChannel = AndroidNotificationChannel(
+      'call_channel',
+      'Voice Calls',
+      description: 'Notifications for incoming voice calls',
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
+    );
+     await _localNotifications
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(callChannel);
   }
 
   Future<void> _getAndStoreToken() async {
@@ -280,6 +293,61 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         ),
       ),
       payload: 'summon:$sessionId',
+    );
+  } else if (type == 'call') {
+    final FlutterLocalNotificationsPlugin localNotifications = FlutterLocalNotificationsPlugin();
+    
+    // Initialize with callback
+    const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('@mipmap/launcher_icon');
+    const InitializationSettings initSettings = InitializationSettings(android: androidSettings);
+    await localNotifications.initialize(initSettings);
+    
+    final callId = data['callId'] ?? '';
+    final callerName = data['callerName'] ?? 'Unknown';
+    // final isGroup = data['isGroup'] == 'true';
+    final title = 'Incoming Call';
+    final body = '$callerName is calling you...';
+    
+    // Create notification with call style and full screen intent
+    await localNotifications.show(
+      callId.hashCode, // Unique ID based on call ID
+      title,
+      body,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          'call_channel',
+          'Voice Calls',
+          channelDescription: 'Incoming voice calls',
+          importance: Importance.max,
+          priority: Priority.max,
+          fullScreenIntent: true,
+          category: AndroidNotificationCategory.call,
+          visibility: NotificationVisibility.public,
+          ticker: 'Incoming Call',
+          colorized: true,
+          color: const Color(0xFF00C853), // Green for call
+          enableVibration: true,
+          vibrationPattern: Int64List.fromList([0, 1000, 1000, 1000, 1000]),
+          ongoing: true,
+          autoCancel: false,
+          timeoutAfter: 45000, // Auto dismiss after 45s
+          actions: <AndroidNotificationAction>[
+            const AndroidNotificationAction(
+              'accept_call',
+              'Answer',
+              showsUserInterface: true,
+              cancelNotification: true,
+            ),
+            const AndroidNotificationAction(
+              'decline_call',
+              'Decline',
+              showsUserInterface: true,
+              cancelNotification: true,
+            ),
+          ],
+        ),
+      ),
+      payload: 'call:$callId',
     );
   }
 }

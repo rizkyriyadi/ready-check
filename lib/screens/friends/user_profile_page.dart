@@ -337,6 +337,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     chatId: chatId,
                     otherUserName: _user!.displayName,
                     otherUserPhoto: _user!.photoUrl,
+                    otherUserId: widget.userId,
                   ),
                 ),
               );

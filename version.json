@@ -1,17 +1,19 @@
 {
-    "version": "1.5.1",
-    "build_number": 15,
+    "version": "1.5.3",
+    "build_number": 17,
     "release_date": "2025-12-29",
-    "release_notes": "Voice Call Bug Fixes",
+    "release_notes": "New Glass UI & Performance Fixes",
     "min_supported_version": "1.0.0",
     "update_url": {
-        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.5.1.apk",
+        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.5.3.apk",
         "ios": ""
     },
     "force_update": false,
     "changelog": [
-        "📞 Voice Call: Stable release",
-        "🐛 Fix: End call crash",
-        "🐛 Fix: Firestore rules for calls"
+        "💎 New: Glass UI & Floating Dock",
+        "📞 New: Call History Log",
+        "⚡ Fix: Chat Blinking & Performance",
+        "🐛 Fix: FAB Layout Overlap",
+        "🚀 Optimized Size (<100MB)"
     ]
 }
