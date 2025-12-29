@@ -8,6 +8,7 @@ import 'package:ready_check/services/direct_chat_service.dart';
 import 'package:ready_check/screens/widgets/glass_container.dart';
 import 'package:ready_check/screens/widgets/user_avatar.dart';
 import 'package:ready_check/screens/widgets/mention_widgets.dart';
+import 'package:ready_check/screens/widgets/photo_viewer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class DirectChatPage extends StatefulWidget {
@@ -37,15 +38,18 @@ class _DirectChatPageState extends State<DirectChatPage> {
   String? _replyToId;
   String? _replyToText;
   String? _replyToSender;
+  
+  // Store service reference for dispose
+  late DirectChatService _chatService;
 
   @override
   void initState() {
     super.initState();
+    _chatService = Provider.of<DirectChatService>(context, listen: false);
     _controller.addListener(_onTyping);
     // Mark messages as read when opening chat
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final chatService = Provider.of<DirectChatService>(context, listen: false);
-      chatService.markAsRead(widget.chatId);
+      _chatService.markAsRead(widget.chatId);
     });
   }
 
@@ -55,25 +59,21 @@ class _DirectChatPageState extends State<DirectChatPage> {
     _controller.dispose();
     _scrollController.dispose();
     _typingTimer?.cancel();
-    // Clear typing status
-    final chatService = Provider.of<DirectChatService>(context, listen: false);
-    chatService.setTyping(widget.chatId, false);
+    _chatService.setTyping(widget.chatId, false);
     super.dispose();
   }
 
   void _onTyping() {
-    final chatService = Provider.of<DirectChatService>(context, listen: false);
-    
     if (_controller.text.isNotEmpty && !_isTyping) {
       _isTyping = true;
-      chatService.setTyping(widget.chatId, true);
+      _chatService.setTyping(widget.chatId, true);
     }
     
     _typingTimer?.cancel();
     _typingTimer = Timer(const Duration(seconds: 2), () {
       if (_isTyping) {
         _isTyping = false;
-        chatService.setTyping(widget.chatId, false);
+        _chatService.setTyping(widget.chatId, false);
       }
     });
   }
@@ -380,22 +380,34 @@ class _DirectChatPageState extends State<DirectChatPage> {
                       ),
                     ),
                   ],
-                  // Image
+                  // Image - tappable for full view
                   if (msg.isPhoto && msg.imageUrl != null) ...[
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        msg.imageUrl!,
-                        width: 200,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return const SizedBox(
-                            width: 200,
-                            height: 150,
-                            child: Center(child: CircularProgressIndicator()),
-                          );
-                        },
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => PhotoViewerPage(
+                              imageUrl: msg.imageUrl!,
+                              senderName: msg.senderName,
+                            ),
+                          ),
+                        );
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          msg.imageUrl!,
+                          width: 200,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const SizedBox(
+                              width: 200,
+                              height: 150,
+                              child: Center(child: CircularProgressIndicator()),
+                            );
+                          },
+                        ),
                       ),
                     ),
                     const SizedBox(height: 4),

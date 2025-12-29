@@ -1,16 +1,17 @@
 {
-    "version": "1.4.1",
-    "build_number": 10,
+    "version": "1.4.2",
+    "build_number": 11,
     "release_date": "2025-12-29",
-    "release_notes": "@Mention Tag Feature",
+    "release_notes": "@Mention Autocomplete & Photo Zoom",
     "min_supported_version": "1.0.0",
     "update_url": {
-        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.4.1.apk",
+        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.4.2.apk",
         "ios": ""
     },
     "force_update": false,
     "changelog": [
-        "🏷️ @mention: Tag people in chat",
-        "💙 Mentions highlighted in blue"
+        "🏷️ @mention: Autocomplete saat ketik @",
+        "🔍 Photo zoom: Tap foto untuk fullscreen + zoom",
+        "🐛 Bug fix: dispose error"
     ]
 }

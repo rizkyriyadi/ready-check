@@ -12,6 +12,7 @@ import 'package:ready_check/screens/session/ready_check_overlay.dart';
 import 'package:ready_check/screens/widgets/user_avatar.dart';
 import 'package:ready_check/screens/widgets/glass_container.dart';
 import 'package:ready_check/screens/widgets/mention_widgets.dart';
+import 'package:ready_check/screens/widgets/photo_viewer.dart';
 import 'package:ready_check/screens/friends/user_profile_page.dart';
 import 'package:ready_check/screens/circles/circle_settings_page.dart';
 import 'package:intl/intl.dart';
@@ -37,38 +38,115 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
   String? _replyToId;
   String? _replyToText;
   String? _replyToSender;
+  
+  // Mention state
+  List<Map<String, dynamic>> _circleMembers = [];
+  List<Map<String, dynamic>> _mentionSuggestions = [];
+  bool _showMentionOverlay = false;
+  int _mentionStartIndex = -1;
+  
+  // Store service reference for dispose
+  late CircleService _circleService;
 
   @override
   void initState() {
     super.initState();
-    _messageController.addListener(_onTyping);
+    _circleService = Provider.of<CircleService>(context, listen: false);
+    _messageController.addListener(_onTextChanged);
+    _loadMembers();
+  }
+  
+  Future<void> _loadMembers() async {
+    final members = await _circleService.getCircleMembers(widget.circleId);
+    if (mounted) {
+      setState(() => _circleMembers = members);
+    }
   }
 
   @override
   void dispose() {
-    _messageController.removeListener(_onTyping);
+    _messageController.removeListener(_onTextChanged);
     _messageController.dispose();
     _scrollController.dispose();
     _typingTimer?.cancel();
-    final circleService = Provider.of<CircleService>(context, listen: false);
-    circleService.setTyping(widget.circleId, false);
+    _circleService.setTyping(widget.circleId, false);
     super.dispose();
   }
 
-  void _onTyping() {
-    final circleService = Provider.of<CircleService>(context, listen: false);
+  void _onTextChanged() {
+    final text = _messageController.text;
+    final cursorPos = _messageController.selection.baseOffset;
     
-    if (_messageController.text.isNotEmpty && !_isTyping) {
+    // Handle typing indicator
+    if (text.isNotEmpty && !_isTyping) {
       _isTyping = true;
-      circleService.setTyping(widget.circleId, true);
+      _circleService.setTyping(widget.circleId, true);
     }
     
     _typingTimer?.cancel();
     _typingTimer = Timer(const Duration(seconds: 2), () {
       if (_isTyping) {
         _isTyping = false;
-        circleService.setTyping(widget.circleId, false);
+        _circleService.setTyping(widget.circleId, false);
       }
+    });
+    
+    // Handle @mention detection
+    if (cursorPos > 0) {
+      // Find @ before cursor
+      int atIndex = -1;
+      for (int i = cursorPos - 1; i >= 0; i--) {
+        if (text[i] == '@') {
+          atIndex = i;
+          break;
+        } else if (text[i] == ' ' || text[i] == '\n') {
+          break;
+        }
+      }
+      
+      if (atIndex >= 0) {
+        final query = text.substring(atIndex + 1, cursorPos).toLowerCase();
+        final filtered = _circleMembers.where((m) {
+          final name = (m['displayName'] ?? '').toLowerCase();
+          return name.contains(query);
+        }).toList();
+        
+        setState(() {
+          _mentionStartIndex = atIndex;
+          _mentionSuggestions = filtered;
+          _showMentionOverlay = filtered.isNotEmpty;
+        });
+      } else {
+        setState(() {
+          _showMentionOverlay = false;
+          _mentionSuggestions = [];
+        });
+      }
+    } else {
+      setState(() {
+        _showMentionOverlay = false;
+        _mentionSuggestions = [];
+      });
+    }
+  }
+  
+  void _insertMention(String name) {
+    final text = _messageController.text;
+    final cursorPos = _messageController.selection.baseOffset;
+    
+    // Replace @query with @name
+    final newText = text.substring(0, _mentionStartIndex) + 
+                    '@$name ' + 
+                    text.substring(cursorPos);
+    
+    _messageController.text = newText;
+    _messageController.selection = TextSelection.collapsed(
+      offset: _mentionStartIndex + name.length + 2
+    );
+    
+    setState(() {
+      _showMentionOverlay = false;
+      _mentionSuggestions = [];
     });
   }
 
@@ -89,8 +167,6 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
   }
 
   Future<void> _pickAndSendImage() async {
-    final circleService = Provider.of<CircleService>(context, listen: false);
-    
     final XFile? image = await _imagePicker.pickImage(
       source: ImageSource.gallery,
       imageQuality: 70,
@@ -98,7 +174,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
     );
     
     if (image != null) {
-      await circleService.sendPhoto(
+      await _circleService.sendPhoto(
         widget.circleId, 
         File(image.path),
         replyToId: _replyToId,
@@ -109,8 +185,6 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
   }
 
   Future<void> _takeAndSendPhoto() async {
-    final circleService = Provider.of<CircleService>(context, listen: false);
-    
     final XFile? image = await _imagePicker.pickImage(
       source: ImageSource.camera,
       imageQuality: 70,
@@ -118,7 +192,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
     );
     
     if (image != null) {
-      await circleService.sendPhoto(
+      await _circleService.sendPhoto(
         widget.circleId, 
         File(image.path),
         replyToId: _replyToId,
@@ -130,8 +204,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
 
   void _sendMessage() {
     if (_messageController.text.trim().isEmpty) return;
-    final circleService = Provider.of<CircleService>(context, listen: false);
-    circleService.sendCircleMessage(
+    _circleService.sendCircleMessage(
       widget.circleId, 
       _messageController.text,
       replyToId: _replyToId,
@@ -140,6 +213,10 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
     _messageController.clear();
     _isTyping = false;
     _clearReply();
+    setState(() {
+      _showMentionOverlay = false;
+      _mentionSuggestions = [];
+    });
     if (_scrollController.hasClients) {
       _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
     }
@@ -158,8 +235,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
         Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => ReadyCheckOverlay(sessionId: sessionId))
         );
-        final circleService = Provider.of<CircleService>(context, listen: false);
-        circleService.sendCircleMessage(widget.circleId, "SUMMONED THE SQUAD! JOIN NOW!");
+        _circleService.sendCircleMessage(widget.circleId, "SUMMONED THE SQUAD! JOIN NOW!");
      }
   }
   
@@ -191,7 +267,6 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final circleService = Provider.of<CircleService>(context, listen: false);
     final authService = Provider.of<AuthService>(context, listen: false);
     final currentUserId = authService.user?.uid;
     final theme = Theme.of(context);
@@ -207,7 +282,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
           child: Container(),
         ),
         title: StreamBuilder<Circle>(
-          stream: circleService.streamCircle(widget.circleId),
+          stream: _circleService.streamCircle(widget.circleId),
           builder: (context, snapshot) {
             final circle = snapshot.data;
             return Row(
@@ -222,9 +297,8 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(circle?.name ?? widget.circleName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      // Typing indicator
                       StreamBuilder<List<String>>(
-                        stream: circleService.streamTypingMembers(widget.circleId),
+                        stream: _circleService.streamTypingMembers(widget.circleId),
                         builder: (context, typingSnap) {
                           final typingNames = typingSnap.data ?? [];
                           if (typingNames.isEmpty) return const SizedBox.shrink();
@@ -233,7 +307,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
                               : '${typingNames.length} people typing...';
                           return Text(
                             text,
-                            style: TextStyle(fontSize: 11, color: Colors.greenAccent, fontStyle: FontStyle.italic),
+                            style: const TextStyle(fontSize: 11, color: Colors.greenAccent, fontStyle: FontStyle.italic),
                           );
                         },
                       ),
@@ -251,7 +325,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
             tooltip: "Summon Squad",
           ),
           StreamBuilder<Circle>(
-            stream: circleService.streamCircle(widget.circleId),
+            stream: _circleService.streamCircle(widget.circleId),
             builder: (context, snapshot) {
               final code = snapshot.data?.code ?? '...';
               return IconButton(
@@ -286,7 +360,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
           children: [
             Expanded(
               child: StreamBuilder<List<Message>>(
-                stream: circleService.streamCircleMessages(widget.circleId),
+                stream: _circleService.streamCircleMessages(widget.circleId),
                 builder: (context, snapshot) {
                    if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
                    final messages = snapshot.data!;
@@ -340,6 +414,38 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
                 ),
               ),
             
+            // Mention suggestions overlay
+            if (_showMentionOverlay && _mentionSuggestions.isNotEmpty)
+              Container(
+                constraints: const BoxConstraints(maxHeight: 180),
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: theme.cardColor,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
+                ),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: _mentionSuggestions.length,
+                  itemBuilder: (context, index) {
+                    final user = _mentionSuggestions[index];
+                    return ListTile(
+                      dense: true,
+                      leading: UserAvatar(photoUrl: user['photoUrl'] ?? '', radius: 16),
+                      title: Text(user['displayName'] ?? 'Unknown'),
+                      onTap: () => _insertMention(user['displayName'] ?? 'User'),
+                    );
+                  },
+                ),
+              ),
+            
             // Input Area
             SafeArea(
               top: false,
@@ -366,7 +472,7 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
                             controller: _messageController,
                             style: TextStyle(color: theme.textTheme.bodyLarge?.color),
                             decoration: InputDecoration(
-                              hintText: "Message...",
+                              hintText: "Message... (type @ to mention)",
                               hintStyle: TextStyle(color: theme.hintColor),
                               border: InputBorder.none,
                               filled: false,
@@ -403,6 +509,18 @@ class _CircleMessageBubble extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => UserProfilePage(userId: message.senderId),
+      ),
+    );
+  }
+  
+  void _openPhotoViewer(BuildContext context) {
+    if (message.imageUrl == null) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => PhotoViewerPage(
+          imageUrl: message.imageUrl!,
+          senderName: message.senderName,
+        ),
       ),
     );
   }
@@ -484,23 +602,26 @@ class _CircleMessageBubble extends StatelessWidget {
                           child: Text(message.replyToText ?? '', style: TextStyle(fontSize: 11, color: Colors.grey.shade400, fontStyle: FontStyle.italic)),
                         ),
                       ],
-                      // Image
+                      // Image - tappable for full view
                       if (message.isPhoto && message.imageUrl != null) ...[
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            message.imageUrl!,
-                            width: 200,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return const SizedBox(width: 200, height: 150, child: Center(child: CircularProgressIndicator()));
-                            },
+                        GestureDetector(
+                          onTap: () => _openPhotoViewer(context),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(
+                              message.imageUrl!,
+                              width: 200,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return const SizedBox(width: 200, height: 150, child: Center(child: CircularProgressIndicator()));
+                              },
+                            ),
                           ),
                         ),
                         const SizedBox(height: 4),
                       ],
-                      // Text (only if not photo-only) - with mention highlighting
+                      // Text with mention highlighting
                       if (!message.isPhoto)
                         MentionText(
                           text: message.text,
