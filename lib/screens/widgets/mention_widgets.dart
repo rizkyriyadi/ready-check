@@ -1,29 +1,34 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-/// Widget to display text with highlighted @mentions
+/// Widget to display text with highlighted @mentions (supports multi-word with underscore)
+/// e.g., @rizky_riyadi will be highlighted and tappable
 class MentionText extends StatelessWidget {
   final String text;
   final TextStyle? style;
   final TextStyle? mentionStyle;
+  final Function(String name)? onMentionTap;
 
   const MentionText({
     super.key,
     required this.text,
     this.style,
     this.mentionStyle,
+    this.onMentionTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final defaultStyle = style ?? TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color);
-    final highlightStyle = mentionStyle ?? TextStyle(
+    final highlightStyle = mentionStyle ?? const TextStyle(
       color: Colors.blue,
       fontWeight: FontWeight.bold,
     );
 
-    // Parse text and find @mentions
-    final mentionRegex = RegExp(r'@\w+');
-    final spans = <TextSpan>[];
+    // Parse text and find @mentions (supports underscores for multi-word names)
+    // Format: @name_with_underscores
+    final mentionRegex = RegExp(r'@[\w_]+');
+    final spans = <InlineSpan>[];
     int lastEnd = 0;
 
     for (final match in mentionRegex.allMatches(text)) {
@@ -31,8 +36,27 @@ class MentionText extends StatelessWidget {
       if (match.start > lastEnd) {
         spans.add(TextSpan(text: text.substring(lastEnd, match.start), style: defaultStyle));
       }
-      // Add highlighted mention
-      spans.add(TextSpan(text: match.group(0), style: highlightStyle));
+      
+      // Get mention text and convert underscores back to spaces for display
+      final mentionRaw = match.group(0)!;
+      final mentionDisplay = mentionRaw.replaceAll('_', ' ');
+      
+      // Add highlighted mention (tappable if callback provided)
+      if (onMentionTap != null) {
+        spans.add(TextSpan(
+          text: mentionDisplay,
+          style: highlightStyle.copyWith(decoration: TextDecoration.underline),
+          recognizer: TapGestureRecognizer()
+            ..onTap = () {
+              // Extract name without @ and with spaces
+              final name = mentionRaw.substring(1).replaceAll('_', ' ');
+              onMentionTap!(name);
+            },
+        ));
+      } else {
+        spans.add(TextSpan(text: mentionDisplay, style: highlightStyle));
+      }
+      
       lastEnd = match.end;
     }
 

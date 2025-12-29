@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -134,14 +135,17 @@ class _CircleDetailPageState extends State<CircleDetailPage> {
     final text = _messageController.text;
     final cursorPos = _messageController.selection.baseOffset;
     
-    // Replace @query with @name
+    // Replace spaces with underscores for multi-word names
+    final formattedName = name.replaceAll(' ', '_');
+    
+    // Replace @query with @name_with_underscores
     final newText = text.substring(0, _mentionStartIndex) + 
-                    '@$name ' + 
+                    '@$formattedName ' + 
                     text.substring(cursorPos);
     
     _messageController.text = newText;
     _messageController.selection = TextSelection.collapsed(
-      offset: _mentionStartIndex + name.length + 2
+      offset: _mentionStartIndex + formattedName.length + 2
     );
     
     setState(() {
@@ -621,12 +625,28 @@ class _CircleMessageBubble extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                       ],
-                      // Text with mention highlighting
+                      // Text with mention highlighting - tappable to show profile
                       if (!message.isPhoto)
                         MentionText(
                           text: message.text,
                           style: TextStyle(fontSize: 15, color: theme.textTheme.bodyLarge?.color),
                           mentionStyle: const TextStyle(fontSize: 15, color: Colors.blue, fontWeight: FontWeight.bold),
+                          onMentionTap: (name) async {
+                            // Find user by display name and show profile
+                            final firestore = FirebaseFirestore.instance;
+                            final query = await firestore
+                                .collection('users')
+                                .where('displayName', isEqualTo: name)
+                                .limit(1)
+                                .get();
+                            if (query.docs.isNotEmpty && context.mounted) {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => UserProfilePage(userId: query.docs.first.id),
+                                ),
+                              );
+                            }
+                          },
                         ),
                       const SizedBox(height: 4),
                       Row(
