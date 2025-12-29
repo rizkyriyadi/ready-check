@@ -7,6 +7,7 @@ import 'package:ready_check/models/chat_model.dart';
 import 'package:ready_check/services/direct_chat_service.dart';
 import 'package:ready_check/screens/widgets/glass_container.dart';
 import 'package:ready_check/screens/widgets/user_avatar.dart';
+import 'package:ready_check/screens/widgets/mention_widgets.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class DirectChatPage extends StatefulWidget {
@@ -399,12 +400,16 @@ class _DirectChatPageState extends State<DirectChatPage> {
                     ),
                     const SizedBox(height: 4),
                   ],
-                  // Text
+                  // Text - with @mention highlighting
                   if (msg.text.isNotEmpty && !msg.isPhoto)
-                    Text(
-                      msg.text,
+                    MentionText(
+                      text: msg.text,
                       style: TextStyle(
                         color: isMe ? Colors.greenAccent.shade100 : Colors.white,
+                      ),
+                      mentionStyle: const TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   // Read status for sent messages

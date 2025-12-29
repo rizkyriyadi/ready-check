@@ -1,19 +1,16 @@
 {
-    "version": "1.4.0",
-    "build_number": 9,
+    "version": "1.4.1",
+    "build_number": 10,
     "release_date": "2025-12-29",
-    "release_notes": "Unified Chat & Circle Management",
+    "release_notes": "@Mention Tag Feature",
     "min_supported_version": "1.0.0",
     "update_url": {
-        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.4.0.apk",
+        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.4.1.apk",
         "ios": ""
     },
     "force_update": false,
     "changelog": [
-        "💬 Circle chat: photos, replies, typing indicator",
-        "👆 Reply: double-tap to reply (better UX)",
-        "⚙️ Circle settings: edit name, change photo",
-        "🚪 Leave circle option",
-        "👥 Add members from friends list"
+        "🏷️ @mention: Tag people in chat",
+        "💙 Mentions highlighted in blue"
     ]
 }

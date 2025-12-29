@@ -11,6 +11,7 @@ import 'package:ready_check/services/session_service.dart';
 import 'package:ready_check/screens/session/ready_check_overlay.dart';
 import 'package:ready_check/screens/widgets/user_avatar.dart';
 import 'package:ready_check/screens/widgets/glass_container.dart';
+import 'package:ready_check/screens/widgets/mention_widgets.dart';
 import 'package:ready_check/screens/friends/user_profile_page.dart';
 import 'package:ready_check/screens/circles/circle_settings_page.dart';
 import 'package:intl/intl.dart';
@@ -499,9 +500,13 @@ class _CircleMessageBubble extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                       ],
-                      // Text (only if not photo-only)
+                      // Text (only if not photo-only) - with mention highlighting
                       if (!message.isPhoto)
-                        Text(message.text, style: TextStyle(fontSize: 15, color: theme.textTheme.bodyLarge?.color)),
+                        MentionText(
+                          text: message.text,
+                          style: TextStyle(fontSize: 15, color: theme.textTheme.bodyLarge?.color),
+                          mentionStyle: const TextStyle(fontSize: 15, color: Colors.blue, fontWeight: FontWeight.bold),
+                        ),
                       const SizedBox(height: 4),
                       Row(
                         mainAxisSize: MainAxisSize.min,
