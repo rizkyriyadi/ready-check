@@ -32,6 +32,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> with SingleTickerProvider
   Timer? _timer;
   int _callDuration = 0;
   bool _isConnected = false;
+  bool _hasPopped = false; // Prevent double pop
   late AnimationController _pulseController;
 
   @override
@@ -64,10 +65,17 @@ class _VoiceCallPageState extends State<VoiceCallPage> with SingleTickerProvider
     return '$minutes:$secs';
   }
 
+  void _safelyPop() {
+    if (!_hasPopped && mounted && Navigator.of(context).canPop()) {
+      _hasPopped = true;
+      Navigator.of(context).pop();
+    }
+  }
+
   void _endCall() {
     final callService = Provider.of<CallService>(context, listen: false);
     callService.endCall();
-    Navigator.of(context).pop();
+    _safelyPop();
   }
 
   @override
@@ -82,7 +90,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> with SingleTickerProvider
         // Check if call ended
         if (call?.status == CallStatus.ended || call?.status == CallStatus.declined) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) Navigator.of(context).pop();
+            _safelyPop();
           });
         }
 

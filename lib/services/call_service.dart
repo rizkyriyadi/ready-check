@@ -47,6 +47,8 @@ class CallService extends ChangeNotifier {
       _engine!.registerEventHandler(RtcEngineEventHandler(
         onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
           debugPrint('Joined channel: ${connection.channelId}');
+          // Set speaker after join success
+          _engine?.setEnableSpeakerphone(true);
         },
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
           debugPrint('Remote user joined: $remoteUid');
@@ -65,9 +67,9 @@ class CallService extends ChangeNotifier {
 
       await _engine!.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
       await _engine!.enableAudio();
-      await _engine!.setEnableSpeakerphone(true);
       
       _isInitialized = true;
+      debugPrint('Agora initialized successfully');
       return true;
     } catch (e) {
       debugPrint('Error initializing Agora: $e');

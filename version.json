@@ -1,17 +1,17 @@
 {
-    "version": "1.5.0",
-    "build_number": 14,
+    "version": "1.5.1",
+    "build_number": 15,
     "release_date": "2025-12-29",
-    "release_notes": "Voice Call Feature",
+    "release_notes": "Voice Call Bug Fixes",
     "min_supported_version": "1.0.0",
     "update_url": {
-        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.5.0.apk",
+        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.5.1.apk",
         "ios": ""
     },
     "force_update": false,
     "changelog": [
-        "📞 Voice Call: 1-on-1 dan Group call",
-        "🎙️ Mute/Speaker controls",
-        "⏱️ Call duration timer"
+        "📞 Voice Call: Stable release",
+        "🐛 Fix: End call crash",
+        "🐛 Fix: Firestore rules for calls"
     ]
 }

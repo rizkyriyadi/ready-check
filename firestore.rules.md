@@ -84,5 +84,15 @@ service cloud.firestore {
         allow read, create: if request.auth != null;
       }
     }
+
+    // CALLS (Voice/Video)
+    match /calls/{callId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && (
+        request.auth.uid == resource.data.callerId ||
+        request.auth.uid in resource.data.receiverIds
+      );
+    }
   }
 }
