@@ -69,12 +69,32 @@ class SessionService extends ChangeNotifier {
 
       await docRef.set(session.toMap());
       
+      // Add each participant with their REAL user data from Firestore
       for (final pid in participantIds) {
          final isHost = pid == user.uid;
+         String displayName = 'Unknown';
+         String photoUrl = '';
+         
+         if (isHost) {
+           displayName = user.displayName ?? 'Unknown';
+           photoUrl = user.photoURL ?? '';
+         } else {
+           // Fetch user data from users collection
+           try {
+             final userDoc = await _firestore.collection('users').doc(pid).get();
+             if (userDoc.exists) {
+               displayName = userDoc.data()?['displayName'] ?? 'Unknown';
+               photoUrl = userDoc.data()?['photoUrl'] ?? '';
+             }
+           } catch (e) {
+             debugPrint('Error fetching user $pid: $e');
+           }
+         }
+         
          await _firestore.collection('sessions').doc(docRef.id).collection('participants').doc(pid).set({
            'uid': pid,
-           'displayName': isHost ? (user.displayName ?? 'Unknown') : 'Member', 
-           'photoUrl': isHost ? (user.photoURL ?? '') : '', 
+           'displayName': displayName, 
+           'photoUrl': photoUrl, 
            'status': isHost ? 'ready' : 'waiting', 
          });
       }

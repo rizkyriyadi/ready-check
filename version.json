@@ -1,16 +1,16 @@
 {
-    "version": "1.4.3",
-    "build_number": 12,
+    "version": "1.4.4",
+    "build_number": 13,
     "release_date": "2025-12-29",
-    "release_notes": "Multi-word @Mention + Tappable Profile",
+    "release_notes": "Fix Ready Check member names",
     "min_supported_version": "1.0.0",
     "update_url": {
-        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.4.3.apk",
+        "android": "https://github.com/rizkyriyadi/ready-check/raw/main/ready-check-v1.4.4.apk",
         "ios": ""
     },
     "force_update": false,
     "changelog": [
-        "🏷️ @mention multi-word: @rizky_riyadi (full name highlighted)",
-        "👆 Tap mention biru → buka profile user"
+        "🐛 Fix: Ready Check popup shows real member names",
+        "🐛 Fix: Member photos display correctly"
     ]
 }
